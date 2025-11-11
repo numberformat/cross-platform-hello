@@ -1,0 +1,87 @@
+name: build-and-release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cxx_compiler: g++
+            build_type: Release
+          - os: macos-latest
+            c_compiler: clang
+            cxx_compiler: clang++
+            build_type: Release
+          - os: windows-latest
+            generator: "Visual Studio 17 2022"
+            arch: x64
+            build_type: Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (POSIX)
+        if: runner.os != 'Windows'
+        env:
+          CC: ${{ matrix.c_compiler }}
+          CXX: ${{ matrix.cxx_compiler }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B build -G "${{ matrix.generator }}" -A ${{ matrix.arch }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }}
+
+      - name: Install
+        run: cmake --install build --config ${{ matrix.build_type }} --prefix dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hello-${{ runner.os }}
+          path: dist/**
+
+  release:
+    name: Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Bundle binaries
+        run: |
+          mkdir release
+          for dir in artifacts/*; do
+            name=$(basename "$dir")
+            tar -czf "release/${name}.tar.gz" -C artifacts "$name"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*.tar.gz

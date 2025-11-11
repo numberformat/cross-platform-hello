@@ -1,0 +1,25 @@
+# Build directories
+build/
+dist/
+
+# CMake artifacts
+CMakeFiles/
+CMakeCache.txt
+cmake-install.cmake
+*.cmake
+
+# IDE/editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Docker artifacts
+*.tar
+*.tar.gz
+
+# Logs
+*.log
