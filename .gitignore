@@ -1,6 +1,7 @@
 # Build directories
 build/
 dist/
+wxwidgets-install/
 
 # CMake artifacts
 CMakeFiles/
