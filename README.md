@@ -19,7 +19,7 @@ Simple C++ “Hello World” that builds on Linux, macOS, and Windows using CMak
 
    The executable ends up in `build/cross_platform_hello` on single-config generators (Linux/macOS) or `build/Release/cross_platform_hello.exe` on multi-config ones such as MSVC.
 
-On macOS you can run everything above with a single helper script (it still uses the locally installed Apple toolchain):
+On macOS you can run everything above with a single helper script (it still uses the locally installed Apple toolchain). Before running it, make sure the Xcode Command Line Tools are installed so that `xcrun` and the macOS SDK headers are available (`xcode-select --install` installs them on stock systems).
 
 ```bash
 ./build_macos.sh
